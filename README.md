@@ -1,8 +1,13 @@
 # Node API Starter
 
-## Install
+## Quick Start
 
-```sh
+Create a bash file and execute
+
+```bash
+git clone https://github.com/shubhambattoo/node-api-starter.git my-dream-api &&
+cd my-dream-api &&
+rm -rf .git &&
 yarn
 ```
 
