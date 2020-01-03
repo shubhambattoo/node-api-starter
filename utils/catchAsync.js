@@ -1,6 +1,6 @@
 /**
  * Taking the function and returning another function
- * making the full use of closures
+ * to handle errors with async await
  */
 module.exports = fn => {
   return (req, res, next) => {
