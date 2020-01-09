@@ -15,9 +15,10 @@ if (process.env.NODE_ENV === "development") {
 
 app.use("/api/user", userRoutes);
 
+// Will show 404 if no route found
 app.use("*", (req, res, next) => {
-  return next(new AppError('Not Found', 404))
-})
+  return next(new AppError("Not Found", 404));
+});
 
 app.use(globalErrorHandler);
 
