@@ -2,14 +2,16 @@
 
 ## Quick Start
 
-Create a bash file and execute
-
-```bash
-git clone https://github.com/shubhambattoo/node-api-starter.git my-dream-api &&
-cd my-dream-api &&
-rm -rf .git &&
+Clone this Repository and Install all the dependencies
+```
 yarn
 ```
+
+after that to serve the project run
+```
+yarn start
+```
+this will serve the project on port 3000
 
 ## Author
 
