@@ -24,7 +24,7 @@ or if you are using NPM
 npm start
 ```
 
-this will serve the project on port 3000
+this will serve the project on [http://localhost:3000](http://localhost:3000)
 
 ## Author
 
