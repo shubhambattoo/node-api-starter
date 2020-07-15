@@ -1,24 +1,24 @@
-const nodemailer = require("nodemailer");
-const pug = require("pug");
-const htmlToText = require("html-to-text");
+const nodemailer = require('nodemailer');
+const pug = require('pug');
+const htmlToText = require('html-to-text');
 
 module.exports = class Email {
   constructor(user, url) {
     this.to = user.email;
-    this.firstName = user.username.split(" ")[0];
+    this.firstName = user.username.split(' ')[0];
     this.url = url;
     this.from = `Shubham Battoo <${process.env.EMAIL_FROM}>`;
   }
 
   newTransport() {
-    if (process.env.NODE_ENV === "production") {
+    if (process.env.NODE_ENV === 'production') {
       // create for sendgrid
       return nodemailer.createTransport({
-        service: "SendGrid",
+        service: 'SendGrid',
         auth: {
           user: process.env.SENDGRID_USERNAME,
-          pass: process.env.SENDGRID_PASSWORD
-        }
+          pass: process.env.SENDGRID_PASSWORD,
+        },
       });
     }
     return nodemailer.createTransport({
@@ -26,8 +26,8 @@ module.exports = class Email {
       port: process.env.EMAIL_PORT,
       auth: {
         user: process.env.EMAIL_USERNAME,
-        pass: process.env.EMAIL_PASSWORD
-      }
+        pass: process.env.EMAIL_PASSWORD,
+      },
     });
   }
 
@@ -38,7 +38,7 @@ module.exports = class Email {
       {
         firstName: this.firstName,
         url: this.url,
-        subject
+        subject,
       }
     );
 
@@ -48,7 +48,7 @@ module.exports = class Email {
       to: this.to,
       subject,
       html,
-      text: htmlToText.fromString(html)
+      text: htmlToText.fromString(html),
     };
 
     // 3) create a transport and send email
@@ -56,13 +56,13 @@ module.exports = class Email {
   }
 
   async sendWelcome() {
-    await this.send("welcome", "Welcome to My Company");
+    await this.send('welcome', 'Welcome to My Company');
   }
 
   async sendPasswordReset() {
     await this.send(
-      "passwordReset",
-      "Your password reset token(valid for only 10mins)"
+      'passwordReset',
+      'Your password reset token(valid for only 10mins)'
     );
   }
 };

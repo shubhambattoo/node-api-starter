@@ -6,7 +6,7 @@ class ApiFeatures {
 
   filter() {
     const queryString = { ...this.queryParams };
-    const excludedFields = ["page", "sort", "fields", "limit"];
+    const excludedFields = ['page', 'sort', 'fields', 'limit'];
     excludedFields.forEach(el => {
       delete queryString[el];
     });
@@ -27,21 +27,21 @@ class ApiFeatures {
 
   limitFields() {
     if (this.queryParams.fields) {
-      const fields = this.queryParams.fields.split(",").join(" ");
+      const fields = this.queryParams.fields.split(',').join(' ');
       this.query = this.query.select(fields);
     } else {
-      this.query = this.query.select("-__v");
+      this.query = this.query.select('-__v');
     }
     return this;
   }
 
   sort() {
     if (this.queryParams.sort) {
-      const sortBy = this.queryParams.sort.split(",").join(" ");
+      const sortBy = this.queryParams.sort.split(',').join(' ');
       // console.log(sortBy);
       this.query = this.query.sort(sortBy);
     } else {
-      this.query = this.query.sort("created");
+      this.query = this.query.sort('created');
     }
     return this;
   }

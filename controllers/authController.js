@@ -1,14 +1,13 @@
-const crypto = require("crypto");
-const { promisify } = require("util");
-const jwt = require("jsonwebtoken");
-const catchAsync = require("./../utils/catchAsync");
-const AppError = require("./../utils/appError");
-const User = require("./../models/userModel");
-const Email = require("./../utils/email");
+const { promisify } = require('util');
+const jwt = require('jsonwebtoken');
+const catchAsync = require("../utils/catchAsync");
+const AppError = require("../utils/appError");
+const User = require("../models/userModel");
+const Email = require("../utils/email");
 
 const signToken = (id, email) => {
   return jwt.sign({ id, email }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN
+    expiresIn: process.env.JWT_EXPIRES_IN,
   });
 };
 
@@ -18,8 +17,8 @@ const createAndSendToken = (user, statusCode, res, sendUser = false) => {
   user.password = null;
 
   let response = {
-    status: "ok",
-    token
+    status: 'ok',
+    token,
   };
   response = sendUser ? { ...response, data: { user } } : response;
   res.status(statusCode).json(response);
@@ -29,11 +28,11 @@ exports.signup = catchAsync(async (req, res, next) => {
   const newUser = await User.create({
     username: req.body.username,
     email: req.body.email,
-    password: req.body.password
+    password: req.body.password,
   });
   // TODO:
   // 1) send welcome email
-  const url = `${req.protocol}://${req.get("host")}/me`;
+  const url = `${req.protocol}://${req.get('host')}/me`;
   await new Email(newUser, url).sendWelcome();
   createAndSendToken(newUser, 201, res, true);
 });
@@ -45,7 +44,7 @@ exports.login = catchAsync(async (req, res, next) => {
     return next(new AppError(`please provide email and password`, 400));
   }
 
-  const user = await User.findOne({ email }).select("+password");
+  const user = await User.findOne({ email }).select('+password');
 
   if (!user || !(await user.comparePassword(password, user.password))) {
     return next(new AppError(`Incorrect email or password`, 401));
@@ -58,15 +57,15 @@ exports.protect = catchAsync(async (req, res, next) => {
   let token;
   if (
     req.headers.authorization &&
-    req.headers.authorization.startsWith("Bearer")
+    req.headers.authorization.startsWith('Bearer')
   ) {
-    token = req.headers.authorization.split(" ")[1];
+    token = req.headers.authorization.split(' ')[1];
   } else if (req.cookies.jwt) {
     token = req.cookies.jwt;
   }
 
   if (!token) {
-    return next(new AppError("you are not logged in", 401));
+    return next(new AppError('you are not logged in', 401));
   }
 
   // 2) Verification token
@@ -76,14 +75,14 @@ exports.protect = catchAsync(async (req, res, next) => {
   const currentUser = await User.findById(decoded.id);
   if (!currentUser) {
     return next(
-      new AppError("This user belonging to the token doesnt exits", 401)
+      new AppError('This user belonging to the token doesnt exits', 401)
     );
   }
 
   // 4) Check if user changed password after the JWT was issued
   if (currentUser.changedPasswordAfter(decoded.iat)) {
     return next(
-      new AppError("User recently changed password! Please login again", 401)
+      new AppError('User recently changed password! Please login again', 401)
     );
   }
 
@@ -97,7 +96,7 @@ exports.restricTo = (...roles) => {
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {
       return next(
-        new AppError("you do not have permission to perform this action", 403)
+        new AppError('you do not have permission to perform this action', 403)
       );
     }
 
@@ -107,10 +106,10 @@ exports.restricTo = (...roles) => {
 
 exports.updatePassword = catchAsync(async (req, res, next) => {
   // get user from collection
-  const user = await User.findById(req.user.id).select("+password");
+  const user = await User.findById(req.user.id).select('+password');
 
   if (!user) {
-    return next(new AppError("user not found", 404));
+    return next(new AppError('user not found', 404));
   }
   // check if posted current password is correct
   const isCorrect = await user.comparePassword(
@@ -119,7 +118,7 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   );
 
   if (!isCorrect) {
-    return next(new AppError("passwords do not match with the current", 401));
+    return next(new AppError('passwords do not match with the current', 401));
   }
   // if so update password
   user.password = req.body.password;

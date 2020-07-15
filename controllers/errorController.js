@@ -1,4 +1,4 @@
-const AppError = require("./../utils/appError");
+const AppError = require("../utils/appError");
 
 /**
  * Sends error response in the development env
@@ -6,13 +6,13 @@ const AppError = require("./../utils/appError");
  * @param {any} res response object of Expess
  */
 const sendErrorDev = (err, req, res) => {
-  if (req.originalUrl.startsWith("/api")) {
+  if (req.originalUrl.startsWith('/api')) {
     // console.log(err.isOperational);
     return res.status(err.statusCode).json({
       status: err.status,
       message: err.message,
       error: err,
-      stack: err.stack
+      stack: err.stack,
     });
   }
   // eslint-disable-next-line no-console
@@ -36,16 +36,16 @@ const handleDuplicateFields = err => {
 const handleValidationErrorDB = err => {
   const errors = Object.values(err.errors).map(el => el.message);
 
-  const message = `Invalid input data. ${errors.join(". ")}`;
+  const message = `Invalid input data. ${errors.join('. ')}`;
 
   return new AppError(message, 400);
 };
 
 const handleTokenError = () =>
-  new AppError("User is not authorised. Log in again", 401);
+  new AppError('User is not authorised. Log in again', 401);
 
 const handleTokenExpiredError = () =>
-  new AppError("User is not authorised. Token Expired. Log in again", 401);
+  new AppError('User is not authorised. Token Expired. Log in again', 401);
 
 /**
  * Send Error response while in prod env
@@ -59,12 +59,12 @@ const handleTokenExpiredError = () =>
  * sendErrorProd(err, req, res);
  */
 const sendErrorProd = (err, req, res) => {
-  if (req.originalUrl.startsWith("/api")) {
+  if (req.originalUrl.startsWith('/api')) {
     // Operational, Trusted error : send message to client
     if (err.isOperational) {
       return res.status(err.statusCode).json({
         status: err.status,
-        message: err.message
+        message: err.message,
       });
       // Programming error, where we dont want to leak info
     }
@@ -73,39 +73,39 @@ const sendErrorProd = (err, req, res) => {
     console.error(`ERROR`, err);
     // 2) send generic message
     return res.status(500).json({
-      status: "error",
-      message: "something went wrong"
+      status: 'error',
+      message: 'something went wrong',
     });
   }
 
   if (err.isOperational) {
     // Programming error, where we dont want to leak info
-    return res.status(err.statusCode).render("error", {
-      title: "Something went wrong!",
-      msg: err.message
+    return res.status(err.statusCode).render('error', {
+      title: 'Something went wrong!',
+      msg: err.message,
     });
   }
 };
 
 module.exports = (err, req, res, next) => {
   err.statusCode = err.statusCode || 500;
-  err.status = err.status || "error";
+  err.status = err.status || 'error';
 
-  if (process.env.NODE_ENV === "development") {
+  if (process.env.NODE_ENV === 'development') {
     sendErrorDev(err, req, res);
-  } else if (process.env.NODE_ENV === "production") {
+  } else if (process.env.NODE_ENV === 'production') {
     let error = { ...err };
 
-    if (error.name === "CastError") error = handleCaseErrorDB(error);
+    if (error.name === 'CastError') error = handleCaseErrorDB(error);
 
     if (error.code === 11000) error = handleDuplicateFields(error);
 
-    if (error.name === "ValidationError")
+    if (error.name === 'ValidationError')
       error = handleValidationErrorDB(error);
 
-    if (error.name === "JsonWebTokenError") error = handleTokenError(error);
+    if (error.name === 'JsonWebTokenError') error = handleTokenError(error);
 
-    if (error.name === "TokenExpiredError")
+    if (error.name === 'TokenExpiredError')
       error = handleTokenExpiredError(error);
 
     sendErrorProd(error, req, res);
