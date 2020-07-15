@@ -1,15 +1,15 @@
 {
-  "name": "take-notes-in",
-  "version": "0.0.1",
-  "description": "a backend service to take notes in",
+  "name": "node-api-starter",
+  "version": "0.0.2",
+  "description": "NodeJS API Starter with MongoDB",
   "main": "index.js",
-  "repository": "https://github.com/shubhambattoo/take-notes-in.git",
+  "repository": "https://github.com/shubhambattoo/node-api-starter.git",
   "author": "shubhambattoo",
   "license": "MIT",
   "private": true,
   "scripts": {
     "start": "node server.js",
-    "start:local": "nodemon server.js"
+    "dev": "nodemon server.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
