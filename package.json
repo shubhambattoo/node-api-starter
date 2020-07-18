@@ -24,6 +24,7 @@
     "nodemailer": "^6.4.6",
     "pug": "^2.0.4",
     "sharp": "^0.24.1",
+    "speakeasy": "^2.0.0",
     "validator": "^12.1.0"
   },
   "devDependencies": {

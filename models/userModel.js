@@ -1,7 +1,7 @@
-const crypto = require('crypto');
 const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcryptjs');
+const speakeasy = require('speakeasy');
 
 const userSchema = new mongoose.Schema({
   username: {
@@ -31,7 +31,7 @@ const userSchema = new mongoose.Schema({
     select: false,
   },
   passwordChangedAt: Date,
-  passwordResetToken: String,
+  passwordResetToken: Object,
   passwordResetExpires: Date,
   active: {
     type: Boolean,
@@ -77,18 +77,18 @@ userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
 };
 
 userSchema.methods.createPasswordResetToken = function () {
-  const resetToken = crypto.randomBytes(32).toString('hex');
+  const secret = speakeasy.generateSecret({ length: 20 });
 
-  this.passwordResetToken = crypto
-    .createHash('sha256')
-    .update(resetToken)
-    .digest('hex');
+  const token = speakeasy.totp({
+    secret: secret.base32,
+    encoding: 'base32',
+  });
 
-  // console.log({ resetToken }, this.passwordResetToken);
+  this.passwordResetToken = secret;
 
   this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
 
-  return resetToken;
+  return token;
 };
 
 userSchema.pre(/^find/, function (next) {

@@ -1,4 +1,4 @@
-const AppError = require("../utils/appError");
+const AppError = require('../utils/appError');
 
 /**
  * Sends error response in the development env
@@ -16,7 +16,7 @@ const sendErrorDev = (err, req, res) => {
     });
   }
   // eslint-disable-next-line no-console
-  console.error(`ERROR`, err);
+  console.info(`ERROR`, err);
 };
 
 const handleCaseErrorDB = err => {
