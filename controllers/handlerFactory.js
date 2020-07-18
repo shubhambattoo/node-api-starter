@@ -1,16 +1,16 @@
-const AppError = require("../utils/appError");
-const catchAsync = require("../utils/catchAsync");
-const ApiFeatures = require("../utils/apiFeatures");
+const AppError = require('../utils/appError');
+const catchAsync = require('../utils/catchAsync');
+const ApiFeatures = require('../utils/apiFeatures');
 
-exports.createOne = (Model, name = "data") =>
+exports.createOne = (Model, name = 'data') =>
   catchAsync(async (req, res, next) => {
     const doc = await Model.create(req.body);
 
     res.status(201).json({
-      status: "ok",
+      status: 'ok',
       data: {
-        [name]: doc
-      }
+        [name]: doc,
+      },
     });
   });
 
@@ -25,18 +25,18 @@ exports.deleteOne = Model =>
     }
 
     res.status(204).json({
-      status: "ok",
-      data: null
+      status: 'ok',
+      data: null,
     });
   });
 
-exports.updateOne = (Model, name = "data") =>
+exports.updateOne = (Model, name = 'data') =>
   catchAsync(async (req, res, next) => {
     const { id } = req.params;
 
     const doc = await Model.findByIdAndUpdate(id, req.body, {
       new: true,
-      runValidators: true
+      runValidators: true,
     });
 
     if (!doc) {
@@ -44,14 +44,14 @@ exports.updateOne = (Model, name = "data") =>
     }
 
     res.json({
-      status: "ok",
+      status: 'ok',
       data: {
-        [name]: doc
-      }
+        [name]: doc,
+      },
     });
   });
 
-exports.getOne = (Model, popOptions = "", name = "data") =>
+exports.getOne = (Model, popOptions = '', name = 'data') =>
   catchAsync(async (req, res, next) => {
     let query = Model.findById(req.params.id);
     if (popOptions) query = Model.findById(req.params.id).populate(popOptions);
@@ -63,22 +63,20 @@ exports.getOne = (Model, popOptions = "", name = "data") =>
     }
 
     res.json({
-      status: "ok",
-      data: { [name]: doc }
+      status: 'ok',
+      [name]: doc,
     });
   });
 
-exports.getAll = (Model, name = "data") => 
-  catchAsync(async(req, res, next) => {
-    const features = new ApiFeatures(Model.find(), req.query)
-      .sort()
-      .paginate();
+exports.getAll = (Model, name = 'data') =>
+  catchAsync(async (req, res, next) => {
+    const features = new ApiFeatures(Model.find(), req.query).sort().paginate();
 
     const docs = await features.query;
 
     res.json({
-      status: "ok",
+      status: 'ok',
       results: docs.length,
-      data: { [name]: docs }
+      data: { [name]: docs },
     });
   });

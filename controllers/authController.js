@@ -1,9 +1,10 @@
 const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
-const catchAsync = require("../utils/catchAsync");
-const AppError = require("../utils/appError");
-const User = require("../models/userModel");
-const Email = require("../utils/email");
+const speakeasy = require('speakeasy');
+const catchAsync = require('../utils/catchAsync');
+const AppError = require('../utils/appError');
+const User = require('../models/userModel');
+const Email = require('../utils/email');
 
 const signToken = (id, email) => {
   return jwt.sign({ id, email }, process.env.JWT_SECRET, {
@@ -125,4 +126,68 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   await user.save();
   // log user in send JWT
   createAndSendToken(user, 201, res);
+});
+
+exports.forgotPassword = catchAsync(async (req, res, next) => {
+  const user = await User.findOne({ email: req.body.email });
+
+  if (!user) {
+    return next(new AppError('no user with the email id found', 404));
+  }
+
+  const resetToken = user.createPasswordResetToken();
+  await user.save({ validateBeforeSave: true });
+
+  try {
+    await new Email(user, resetToken).sendPasswordReset();
+
+    res.status(200).json({
+      status: 'success',
+      message: 'OTP sent to email',
+    });
+  } catch (error) {
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save({ validateBeforeSave: false });
+    return next(
+      new AppError('there was an error sending the email, try again', 500)
+    );
+  }
+});
+
+exports.resetPassword = catchAsync(async (req, res, next) => {
+  // get user based on token
+  const user = await User.findOne({
+    email: req.body.email,
+    passwordResetExpires: { $gt: Date.now() },
+  });
+  // set new password if token not expired and there is a user
+  if (!user) {
+    return next(
+      new AppError(
+        'There exists no User with that Email or the token has expired',
+        500
+      )
+    );
+  }
+  const secret = user.passwordResetToken;
+
+  const tokenValidates = speakeasy.totp.verify({
+    secret: secret.base32,
+    encoding: 'base32',
+    token: req.body.token,
+    window: 6,
+  });
+
+  if (!tokenValidates) {
+    return next(new AppError('Token is Invalid', 400));
+  }
+
+  user.password = req.body.newPassword;
+  user.passwordResetToken = undefined;
+  user.passwordResetExpires = undefined;
+  await user.save();
+  // update the password and changedPasswordAt
+  // log the user in, send JWT
+  createAndSendToken(user, 200, res);
 });
