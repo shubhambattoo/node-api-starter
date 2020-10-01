@@ -1,5 +1,14 @@
 # Node API Starter
 
+> Full configuration that runs NodeJS RESTFul API with MongoDB.
+
+[![dependencies Status](https://david-dm.org/shubhambattoo/node-api-starter/status.svg)](https://david-dm.org/shubhambattoo/node-api-starter)
+
+## Requirements
+
+* [MongoDB](https://www.mongodb.com/)
+* [NodeJS](https://nodejs.org/)
+
 ## Quick Start
 
 Clone this Repository and Install all the dependencies
