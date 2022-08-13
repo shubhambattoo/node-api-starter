@@ -6,15 +6,23 @@ const AppError = require('../utils/appError');
 const User = require('../models/userModel');
 const Email = require('../utils/email');
 
-const signToken = (id, email) => {
-  return jwt.sign({ id, email }, process.env.JWT_SECRET, {
+const signToken = (id, email) =>
+  jwt.sign({ id, email }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
-};
 
-const createAndSendToken = (user, statusCode, res, sendUser = false) => {
+const createAndSendToken = (user, statusCode, req, res, sendUser = false) => {
   const token = signToken(user._id, user.email);
+  const time = process.env.JWT_COOKIE_EXPIRES_IN * 60 * 60 * 1000;
+  const cookieOptions = {
+    expires: new Date(Date.now() + time),
+    httpOnly: true,
+    secure: req.secure || req.header('x-headers-proto') === 'https',
+  };
 
+  if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
+
+  res.cookie('jwt', token, cookieOptions);
   user.password = null;
 
   let response = {
@@ -35,7 +43,7 @@ exports.signup = catchAsync(async (req, res, next) => {
   // 1) send welcome email
   const url = `${req.protocol}://${req.get('host')}/me`;
   await new Email(newUser, url).sendWelcome();
-  createAndSendToken(newUser, 201, res, true);
+  createAndSendToken(newUser, 201, req, res, true);
 });
 
 exports.login = catchAsync(async (req, res, next) => {
@@ -50,7 +58,7 @@ exports.login = catchAsync(async (req, res, next) => {
   if (!user || !(await user.comparePassword(password, user.password))) {
     return next(new AppError(`Incorrect email or password`, 401));
   }
-  createAndSendToken(user, 200, res);
+  createAndSendToken(user, 200, req, res);
 });
 
 exports.protect = catchAsync(async (req, res, next) => {
@@ -93,8 +101,9 @@ exports.protect = catchAsync(async (req, res, next) => {
   next();
 });
 
-exports.restricTo = (...roles) => {
-  return (req, res, next) => {
+exports.restricTo =
+  (...roles) =>
+  (req, _res, next) => {
     if (!roles.includes(req.user.role)) {
       return next(
         new AppError('you do not have permission to perform this action', 403)
@@ -103,7 +112,6 @@ exports.restricTo = (...roles) => {
 
     next();
   };
-};
 
 exports.updatePassword = catchAsync(async (req, res, next) => {
   // get user from collection
@@ -125,7 +133,7 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   user.password = req.body.password;
   await user.save();
   // log user in send JWT
-  createAndSendToken(user, 201, res);
+  createAndSendToken(user, 201, req, res);
 });
 
 exports.forgotPassword = catchAsync(async (req, res, next) => {
@@ -189,5 +197,5 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   await user.save();
   // update the password and changedPasswordAt
   // log the user in, send JWT
-  createAndSendToken(user, 200, res);
+  createAndSendToken(user, 200, req, res);
 });
